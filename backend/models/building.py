@@ -7,6 +7,7 @@ class Room(BaseModel):
     id: str
     name: str
     type: str = "general"
+    area_sqft: int = 500
 
 
 class Floor(BaseModel):
@@ -21,12 +22,15 @@ class Budget(BaseModel):
     remaining: int = 5_000_000
     costPerFloor: int = 500_000
     costPerRoom: int = 100_000
+    costPerSqft: int = 200
 
 
 class Constraints(BaseModel):
     maxFloors: int = 10
     maxRoomsPerFloor: int = 6
     minRoomsPerFloor: int = 1
+    defaultRoomSqft: int = 500
+    shape: str = "rectangle"
 
 
 class HistoryEntry(BaseModel):

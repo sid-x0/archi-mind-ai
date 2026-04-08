@@ -15,20 +15,21 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _next_room(floor_number: int, index: int) -> Room:
+def _next_room(floor_number: int, index: int, area_sqft: int = 500) -> Room:
     return Room(
         id=f"room-{floor_number}-{index}-{uuid.uuid4().hex[:6]}",
         name=f"Room {index}",
         type="general",
+        area_sqft=area_sqft,
     )
 
 
 def _recalculate_budget(state: BuildingState) -> BuildingState:
     """Recompute used/remaining from scratch based on current floors/rooms."""
     cost_per_floor = state.budget.costPerFloor
-    cost_per_room = state.budget.costPerRoom
+    cost_per_sqft = state.budget.costPerSqft
     used = sum(
-        cost_per_floor + len(f.rooms) * cost_per_room
+        cost_per_floor + sum((r.area_sqft * cost_per_sqft) for r in f.rooms)
         for f in state.floors
     )
     state.budget.used = used
@@ -42,7 +43,7 @@ def add_floor(state: BuildingState) -> tuple[BuildingState, HistoryEntry]:
     floor = Floor(
         id=f"floor-{new_number}-{uuid.uuid4().hex[:6]}",
         number=new_number,
-        rooms=[_next_room(new_number, 1)],
+        rooms=[_next_room(new_number, 1, state.constraints.defaultRoomSqft)],
     )
     state.floors.append(floor)
     state = _recalculate_budget(state)
@@ -63,7 +64,7 @@ def add_floors(state: BuildingState, count: int) -> tuple[BuildingState, History
         floor = Floor(
             id=f"floor-{n}-{uuid.uuid4().hex[:6]}",
             number=n,
-            rooms=[_next_room(n, 1)],
+            rooms=[_next_room(n, 1, state.constraints.defaultRoomSqft)],
         )
         state.floors.append(floor)
     state = _recalculate_budget(state)
@@ -100,7 +101,7 @@ def add_rooms(state: BuildingState, floor_number: int, count: int) -> tuple[Buil
         if floor.number == floor_number:
             start_idx = len(floor.rooms) + 1
             for i in range(count):
-                floor.rooms.append(_next_room(floor_number, start_idx + i))
+                floor.rooms.append(_next_room(floor_number, start_idx + i, state.constraints.defaultRoomSqft))
             break
     state = _recalculate_budget(state)
     entry = HistoryEntry(
@@ -164,10 +165,18 @@ def rename_room(state: BuildingState, floor_number: int, room_index: int, name: 
 def reset_building(state: BuildingState) -> tuple[BuildingState, HistoryEntry]:
     from state.store import _make_initial_state
     new_state = _make_initial_state()
+    
+    # Retain custom configuration limits
+    new_state.constraints.shape = state.constraints.shape
+    new_state.constraints.defaultRoomSqft = state.constraints.defaultRoomSqft
+    new_state.budget.total = state.budget.total
+    new_state.budget.remaining = state.budget.total
+    new_state.budget.costPerSqft = state.budget.costPerSqft
+    
     entry = HistoryEntry(
         action="reset_building",
         timestamp=_now(),
         details="Building reset to initial state.",
     )
-    new_state.history.append(entry)
+    new_state.history = state.history + [entry]
     return new_state, entry

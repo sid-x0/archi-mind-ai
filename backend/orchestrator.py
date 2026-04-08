@@ -170,59 +170,57 @@ async def process_message(message: str, state: BuildingState) -> ChatResponse:
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 def _dispatch(action: str, params: dict, state: BuildingState):
-    match action:
-        case "add_floor":
-            return engine.add_floor(state)
-        case "add_floors":
-            return engine.add_floors(state, params.get("count", 1))
-        case "remove_floor":
-            return engine.remove_floor(state, params["floor_number"])
-        case "add_rooms":
-            return engine.add_rooms(state, params["floor_number"], params.get("count", 1))
-        case "remove_rooms":
-            return engine.remove_rooms(state, params["floor_number"], params.get("count", 1))
-        case "set_budget":
-            return engine.set_budget(state, params["amount"])
-        case "rename_room":
-            return engine.rename_room(state, params["floor_number"], params.get("room_index", 0), params["name"])
-        case "reset_building":
-            return engine.reset_building(state)
-        case _:
-            raise ValueError(f"Unknown action: {action}")
+    if action == "add_floor":
+        return engine.add_floor(state)
+    elif action == "add_floors":
+        return engine.add_floors(state, params.get("count", 1))
+    elif action == "remove_floor":
+        return engine.remove_floor(state, params["floor_number"])
+    elif action == "add_rooms":
+        return engine.add_rooms(state, params["floor_number"], params.get("count", 1))
+    elif action == "remove_rooms":
+        return engine.remove_rooms(state, params["floor_number"], params.get("count", 1))
+    elif action == "set_budget":
+        return engine.set_budget(state, params["amount"])
+    elif action == "rename_room":
+        return engine.rename_room(state, params["floor_number"], params.get("room_index", 0), params["name"])
+    elif action == "reset_building":
+        return engine.reset_building(state)
+    else:
+        raise ValueError(f"Unknown action: {action}")
 
 
 def _success_message(action: str, params: dict, state: BuildingState, cost: int) -> str:
     remaining = format_cost(state.budget.remaining)
     spent = f" Cost: {format_cost(cost)}." if cost > 0 else ""
-    match action:
-        case "add_floor":
-            n = len(state.floors)
-            return f"✅ Floor {n} added with 1 default room.{spent} Budget remaining: {remaining}."
-        case "add_floors":
-            count = params.get("count", 1)
-            return f"✅ Added {count} floor(s), each with 1 default room.{spent} Budget remaining: {remaining}."
-        case "remove_floor":
-            return f"✅ Floor {params['floor_number']} removed. Floors renumbered. Budget remaining: {remaining}."
-        case "add_rooms":
-            count = params.get("count", 1)
-            floor_n = params["floor_number"]
-            floor = next((f for f in state.floors if f.number == floor_n), None)
-            total = len(floor.rooms) if floor else "?"
-            return f"✅ Added {count} room(s) to Floor {floor_n} (now {total} rooms).{spent} Budget remaining: {remaining}."
-        case "remove_rooms":
-            count = params.get("count", 1)
-            floor_n = params["floor_number"]
-            floor = next((f for f in state.floors if f.number == floor_n), None)
-            total = len(floor.rooms) if floor else "?"
-            return f"✅ Removed {count} room(s) from Floor {floor_n} (now {total} rooms). Budget remaining: {remaining}."
-        case "set_budget":
-            return f"✅ Budget updated to {format_cost(params['amount'])}. Remaining: {remaining}."
-        case "rename_room":
-            return f"✅ Room renamed to '{params['name']}'."
-        case "reset_building":
-            return "✅ Building reset. Fresh start with ₹50L budget!"
-        case _:
-            return "✅ Done!"
+    if action == "add_floor":
+        n = len(state.floors)
+        return f"✅ Floor {n} added with 1 default room.{spent} Budget remaining: {remaining}."
+    elif action == "add_floors":
+        count = params.get("count", 1)
+        return f"✅ Added {count} floor(s), each with 1 default room.{spent} Budget remaining: {remaining}."
+    elif action == "remove_floor":
+        return f"✅ Floor {params['floor_number']} removed. Floors renumbered. Budget remaining: {remaining}."
+    elif action == "add_rooms":
+        count = params.get("count", 1)
+        floor_n = params["floor_number"]
+        floor = next((f for f in state.floors if f.number == floor_n), None)
+        total = len(floor.rooms) if floor else "?"
+        return f"✅ Added {count} room(s) to Floor {floor_n} (now {total} rooms).{spent} Budget remaining: {remaining}."
+    elif action == "remove_rooms":
+        count = params.get("count", 1)
+        floor_n = params["floor_number"]
+        floor = next((f for f in state.floors if f.number == floor_n), None)
+        total = len(floor.rooms) if floor else "?"
+        return f"✅ Removed {count} room(s) from Floor {floor_n} (now {total} rooms). Budget remaining: {remaining}."
+    elif action == "set_budget":
+        return f"✅ Budget updated to {format_cost(params['amount'])}. Remaining: {remaining}."
+    elif action == "rename_room":
+        return f"✅ Room renamed to '{params['name']}'."
+    elif action == "reset_building":
+        return "✅ Building reset. Fresh start with ₹50L budget!"
+    else:
+        return "✅ Done!"
 
 
 def _show_status(state: BuildingState) -> ChatResponse:

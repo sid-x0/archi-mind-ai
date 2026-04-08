@@ -12,6 +12,7 @@ export function TopNav({ currentPage, onNavigate }: TopNavProps) {
   const [searchVal, setSearchVal] = useState('');
 
   const navLinks: { label: string; page: Page }[] = [
+    { label: 'Home', page: 'home' },
     { label: 'Models', page: 'models' },
     { label: 'Datasets', page: 'datasets' },
     { label: 'Simulations', page: 'simulations' },

@@ -6,12 +6,13 @@ building state, what action was just taken, and any constraint violations.
 """
 from models.building import BuildingState
 from services.materials_estimator import format_cost
+from typing import Optional
 
 
 def generate_suggestions(
     state: BuildingState,
-    errors: list[str] | None = None,
-    last_action: str | None = None,
+    errors: Optional[list[str]] = None,
+    last_action: Optional[str] = None,
 ) -> list[str]:
     """
     MCP Tool: generate_suggestions

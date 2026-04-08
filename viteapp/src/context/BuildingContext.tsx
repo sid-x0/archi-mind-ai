@@ -5,6 +5,7 @@ export interface Room {
   id: string;
   name: string;
   type: string;
+  area_sqft: number;
 }
 
 export interface Floor {
@@ -19,16 +20,21 @@ export interface Budget {
   remaining: number;
   costPerFloor: number;
   costPerRoom: number;
+  costPerSqft: number;
+}
+
+export interface Constraints {
+  maxFloors: number;
+  maxRoomsPerFloor: number;
+  minRoomsPerFloor: number;
+  defaultRoomSqft: number;
+  shape: string;
 }
 
 export interface BuildingState {
   floors: Floor[];
   budget: Budget;
-  constraints: {
-    maxFloors: number;
-    maxRoomsPerFloor: number;
-    minRoomsPerFloor: number;
-  };
+  constraints: Constraints;
   history: Array<{ action: string; timestamp: string; details: string }>;
 }
 
@@ -43,11 +49,14 @@ const initialState: BuildingState = {
     remaining: INITIAL_BUDGET,
     costPerFloor: 500000, // 5 Lakh
     costPerRoom: 100000,  // 1 Lakh
+    costPerSqft: 200,
   },
   constraints: {
     maxFloors: 10,
     maxRoomsPerFloor: 6,
     minRoomsPerFloor: 1,
+    defaultRoomSqft: 500,
+    shape: 'rectangle',
   },
   history: [],
 };
@@ -65,7 +74,18 @@ function buildingReducer(state: BuildingState, action: BuildingAction): Building
     case 'RESET':
       return {
         ...initialState,
-        history: [{ action: 'reset', timestamp: new Date().toISOString(), details: 'Building reset to initial state' }]
+        budget: {
+          ...initialState.budget,
+          total: state.budget.total,
+          remaining: state.budget.total,
+          costPerSqft: state.budget.costPerSqft,
+        },
+        constraints: {
+          ...initialState.constraints,
+          defaultRoomSqft: state.constraints.defaultRoomSqft,
+          shape: state.constraints.shape,
+        },
+        history: [{ action: 'reset', timestamp: new Date().toISOString(), details: 'Building reset to empty state' }]
       };
     default:
       return state;

@@ -9,11 +9,6 @@ Calculates granular material costs for a proposed action:
 from models.building import BuildingState, MaterialsCostBreakdown
 
 
-# Material cost ratios (per room, in INR)
-_ROOM_CONCRETE = 60_000   # 60% of 1L room cost
-_ROOM_STEEL = 30_000      # 30%
-_ROOM_GLASS = 10_000      # 10%
-
 # Floor structure (shell, no rooms)
 _FLOOR_CONCRETE = 300_000
 _FLOOR_STEEL = 150_000
@@ -35,12 +30,18 @@ def estimate_materials_cost(
     """
     concrete = steel = glass = 0
     num_floors = len(current_state.floors)
+    room_sqft = current_state.constraints.defaultRoomSqft
+    cost_per_sqft = current_state.budget.costPerSqft
+    
+    room_c = int(room_sqft * cost_per_sqft * 0.60)
+    room_s = int(room_sqft * cost_per_sqft * 0.30)
+    room_g = int(room_sqft * cost_per_sqft * 0.10)
 
     if action in ("add_floor", "add_floors"):
         count = params.get("count", 1)
-        concrete = (_FLOOR_CONCRETE + _ROOM_CONCRETE) * count  # 1 default room per floor
-        steel = (_FLOOR_STEEL + _ROOM_STEEL) * count
-        glass = (_FLOOR_GLASS + _ROOM_GLASS) * count
+        concrete = (_FLOOR_CONCRETE + room_c) * count  # 1 default room per floor
+        steel = (_FLOOR_STEEL + room_s) * count
+        glass = (_FLOOR_GLASS + room_g) * count
         # Foundation scales with height
         for i in range(count):
             depth = num_floors + i + 1
@@ -48,21 +49,21 @@ def estimate_materials_cost(
 
     elif action == "add_rooms":
         count = params.get("count", 1)
-        concrete = _ROOM_CONCRETE * count
-        steel = _ROOM_STEEL * count
-        glass = _ROOM_GLASS * count
+        concrete = room_c * count
+        steel = room_s * count
+        glass = room_g * count
 
     elif action in ("remove_floor", "remove_rooms"):
         # Demolition cost (20% of construction)
         if action == "remove_floor":
-            concrete = int((_FLOOR_CONCRETE + _ROOM_CONCRETE) * 0.20)
-            steel = int((_FLOOR_STEEL + _ROOM_STEEL) * 0.20)
-            glass = int((_FLOOR_GLASS + _ROOM_GLASS) * 0.20)
+            concrete = int((_FLOOR_CONCRETE + room_c) * 0.20)
+            steel = int((_FLOOR_STEEL + room_s) * 0.20)
+            glass = int((_FLOOR_GLASS + room_g) * 0.20)
         else:
             count = params.get("count", 1)
-            concrete = int(_ROOM_CONCRETE * count * 0.20)
-            steel = int(_ROOM_STEEL * count * 0.20)
-            glass = int(_ROOM_GLASS * count * 0.20)
+            concrete = int(room_c * count * 0.20)
+            steel = int(room_s * count * 0.20)
+            glass = int(room_g * count * 0.20)
 
     elif action == "set_budget":
         return MaterialsCostBreakdown(concrete=0, steel=0, glass=0, total=0), True
@@ -75,8 +76,8 @@ def estimate_materials_cost(
 
 def format_cost(amount: int) -> str:
     """Format cost in Indian number system (lakh notation)."""
-    if amount >= 10_00_000:
-        return f"₹{amount / 10_00_000:.1f}Cr"
+    if amount >= 1_00_00_000:
+        return f"₹{amount / 1_00_00_000:.1f}Cr"
     elif amount >= 1_00_000:
         return f"₹{amount // 1_00_000}L {(amount % 1_00_000) // 1000:02d}K" if amount % 1_00_000 else f"₹{amount // 1_00_000}L"
     elif amount >= 1_000:
