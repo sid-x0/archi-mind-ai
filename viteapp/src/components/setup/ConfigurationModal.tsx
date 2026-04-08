@@ -27,7 +27,7 @@ export function ConfigurationModal({ onComplete }: ConfigurationModalProps) {
 
   const selectedDistrict = getDistrictById(districtId);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
 
     const budgetVal = parseInt(budgetLakhs, 10);
@@ -95,12 +95,16 @@ export function ConfigurationModal({ onComplete }: ConfigurationModalProps) {
             {selectedDistrict && (
               <div style={{
                 marginTop: '0.45rem', fontSize: '0.68rem', color: '#94a3b8',
-                display: 'flex', gap: '0.65rem', flexWrap: 'wrap', lineHeight: 1.6,
+                display: 'flex', gap: '0.5rem', flexWrap: 'wrap', lineHeight: 1.6,
               }}>
-                <span>📍 {selectedDistrict.region}</span>
-                <span>🌡 {selectedDistrict.thermal.climateZone}</span>
-                <span>⚡ Seismic Zone {selectedDistrict.seismic.zone}</span>
-                <span>💨 Wind {selectedDistrict.wind.basicWindSpeed} km/h</span>
+                {[
+                  { text: selectedDistrict.region, color: '#7c3aed' },
+                  { text: selectedDistrict.thermal.climateZone, color: '#f59e0b' },
+                  { text: `Seismic Zone ${selectedDistrict.seismic.zone}`, color: '#ef4444' },
+                  { text: `Wind ${selectedDistrict.wind.basicWindSpeed} km/h`, color: '#06b6d4' },
+                ].map(({ text, color }) => (
+                  <span key={text} style={{ color, background: `${color}12`, border: `1px solid ${color}25`, borderRadius: '20px', padding: '0.1rem 0.5rem', fontWeight: 600 }}>{text}</span>
+                ))}
               </div>
             )}
           </div>
@@ -151,7 +155,7 @@ export function ConfigurationModal({ onComplete }: ConfigurationModalProps) {
           </div>
 
           <button type="submit" className="setup-button" disabled={isSubmitting}>
-            {isSubmitting ? 'Starting...' : 'Start Building 👋'}
+            {isSubmitting ? 'Starting...' : 'Start Building'}
           </button>
         </form>
       </div>

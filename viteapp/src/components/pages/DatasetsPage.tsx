@@ -1,62 +1,57 @@
-import { Database, Upload, FileText, Clock, ArrowUpRight } from 'lucide-react';
+import { Database, Wind, Zap, Thermometer, Activity } from 'lucide-react';
+import { KARNATAKA_DISTRICTS } from '../../data/karnataka_db';
 
-const DATASETS = [
-  {
-    name: 'NYC Building Permits 2020-2024',
-    type: 'Permits',
-    records: '2.4M',
-    size: '1.8 GB',
-    updated: '2 days ago',
-    color: '#7c3aed',
-  },
-  {
-    name: 'Global Seismic Hazard Map',
-    type: 'Geospatial',
-    records: '850K',
-    size: '3.2 GB',
-    updated: '1 week ago',
-    color: '#ef4444',
-  },
-  {
-    name: 'Material Cost Index Q1 2026',
-    type: 'Financial',
-    records: '120K',
-    size: '45 MB',
-    updated: 'Today',
-    color: '#10b981',
-  },
-  {
-    name: 'ASHRAE Energy Standards',
-    type: 'Compliance',
-    records: '18K',
-    size: '12 MB',
-    updated: '3 months ago',
-    color: '#f59e0b',
-  },
-  {
-    name: 'Urban Density Profiles — 50 Cities',
-    type: 'Geospatial',
-    records: '5.1M',
-    size: '7.6 GB',
-    updated: '5 days ago',
-    color: '#06b6d4',
-  },
-  {
-    name: 'IBC 2024 Code Requirements',
-    type: 'Compliance',
-    records: '32K',
-    size: '28 MB',
-    updated: '1 month ago',
-    color: '#f97316',
-  },
-];
-
-const TAG_COLORS: Record<string, string> = {
-  Permits: '#7c3aed',
-  Geospatial: '#06b6d4',
-  Financial: '#10b981',
-  Compliance: '#f59e0b',
+const REGION_COLORS: Record<string, string> = {
+  'South Karnataka':        '#7c3aed',
+  'North Karnataka':        '#f59e0b',
+  'Coastal Karnataka':      '#06b6d4',
+  'Hyderabad Karnataka':    '#f97316',
+  'Malnad / Western Ghats': '#10b981',
 };
+
+const RISK_COLORS: Record<string, string> = {
+  Low:      '#10b981',
+  Moderate: '#f59e0b',
+  High:     '#ef4444',
+};
+
+const ZONE_COLORS: Record<string, string> = {
+  'II':  '#10b981',
+  'III': '#f59e0b',
+  'IV':  '#ef4444',
+};
+
+const CLIMATE_COLORS: Record<string, string> = {
+  'Hot-Dry':   '#ef4444',
+  'Hot-Humid': '#06b6d4',
+  'Composite': '#7c3aed',
+  'Temperate': '#10b981',
+};
+
+function WindBar({ value }: { value: number }) {
+  const pct = (value / 10) * 100;
+  const color = value < 4 ? '#10b981' : value < 6 ? '#f59e0b' : '#ef4444';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div style={{ width: '60px', height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '2px' }} />
+      </div>
+      <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{value.toFixed(1)}</span>
+    </div>
+  );
+}
+
+function GridBar({ value }: { value: number }) {
+  const color = value >= 95 ? '#10b981' : value >= 90 ? '#f59e0b' : '#ef4444';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div style={{ width: '60px', height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+        <div style={{ width: `${value}%`, height: '100%', background: color, borderRadius: '2px' }} />
+      </div>
+      <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{value}%</span>
+    </div>
+  );
+}
 
 export function DatasetsPage() {
   return (
@@ -71,30 +66,30 @@ export function DatasetsPage() {
       }}>
         <div>
           <div style={{ fontSize: '0.65rem', letterSpacing: '0.12em', color: 'var(--text-tertiary)', marginBottom: '0.25rem' }}>
-            ARCHITECTURE LIBRARY
+            ENGINEERING DATABASE
           </div>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700 }}>Datasets</h2>
+          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 700 }}>Karnataka Districts</h2>
           <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-            {DATASETS.length} datasets available • 12.6 GB total
+            {KARNATAKA_DISTRICTS.length} districts &nbsp;·&nbsp; Seismic · Thermal · Wind · Electrical data
           </p>
         </div>
-        <button style={{
-          background: 'linear-gradient(135deg, #7c3aed, #06b6d4)',
-          border: 'none',
-          borderRadius: '8px',
-          padding: '0.55rem 1.1rem',
-          color: '#fff',
-          fontSize: '0.8rem',
-          fontWeight: 600,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.4rem',
-          transform: 'none',
-        }}>
-          <Upload size={14} />
-          Upload Dataset
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {[
+            { icon: <Activity size={11} />, label: 'Seismic', color: '#ef4444' },
+            { icon: <Thermometer size={11} />, label: 'Thermal', color: '#f59e0b' },
+            { icon: <Wind size={11} />, label: 'Wind', color: '#06b6d4' },
+            { icon: <Zap size={11} />, label: 'Electrical', color: '#10b981' },
+          ].map(({ icon, label, color }) => (
+            <div key={label} style={{
+              display: 'flex', alignItems: 'center', gap: '0.3rem',
+              background: `${color}12`, border: `1px solid ${color}30`,
+              borderRadius: '20px', padding: '0.25rem 0.7rem',
+              fontSize: '0.65rem', color, fontWeight: 600,
+            }}>
+              {icon}{label}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Table */}
@@ -102,87 +97,93 @@ export function DatasetsPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'var(--text-tertiary)', textAlign: 'left' }}>
-              {['DATASET', 'TYPE', 'RECORDS', 'SIZE', 'UPDATED', ''].map(h => (
+              {['DISTRICT', 'REGION', 'SEISMIC ZONE', 'CLIMATE', 'WIND RISK', 'GRID RELIABILITY'].map(h => (
                 <th key={h} style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid var(--border-subtle)', fontWeight: 700 }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {DATASETS.map((ds, i) => (
-              <tr
-                key={ds.name}
-                style={{
-                  borderBottom: '1px solid var(--border-subtle)',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(255,255,255,0.02)'}
-                onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
-              >
-                <td style={{ padding: '0.9rem 0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{
-                      width: '34px',
-                      height: '34px',
-                      borderRadius: '8px',
-                      background: `${ds.color}15`,
-                      border: `1px solid ${ds.color}30`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}>
-                      <Database size={15} color={ds.color} />
+            {KARNATAKA_DISTRICTS.map((d) => {
+              const regionColor = REGION_COLORS[d.region] ?? '#888';
+              return (
+                <tr
+                  key={d.id}
+                  style={{ borderBottom: '1px solid var(--border-subtle)', cursor: 'pointer', transition: 'background 0.15s' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = 'rgba(255,255,255,0.02)'}
+                  onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = 'transparent'}
+                >
+                  {/* District */}
+                  <td style={{ padding: '0.9rem 0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{
+                        width: '34px', height: '34px', borderRadius: '8px',
+                        background: `${regionColor}15`, border: `1px solid ${regionColor}30`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      }}>
+                        <Database size={15} color={regionColor} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 600 }}>{d.name}</div>
+                        <div style={{ fontSize: '0.68rem', color: 'var(--text-tertiary)', marginTop: '1px' }}>
+                          Pop. {(d.population / 1_000_000).toFixed(1)}M &nbsp;·&nbsp; {d.avgAltitudeM}m
+                        </div>
+                      </div>
                     </div>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>{ds.name}</span>
-                  </div>
-                </td>
-                <td style={{ padding: '0.9rem 0.75rem' }}>
-                  <span style={{
-                    background: `${TAG_COLORS[ds.type] ?? '#888'}15`,
-                    border: `1px solid ${TAG_COLORS[ds.type] ?? '#888'}30`,
-                    borderRadius: '20px',
-                    padding: '0.15rem 0.6rem',
-                    fontSize: '0.65rem',
-                    color: TAG_COLORS[ds.type] ?? '#888',
-                    fontWeight: 600,
-                  }}>
-                    {ds.type}
-                  </span>
-                </td>
-                <td style={{ padding: '0.9rem 0.75rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>{ds.records}</td>
-                <td style={{ padding: '0.9rem 0.75rem', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <FileText size={11} />
-                    {ds.size}
-                  </div>
-                </td>
-                <td style={{ padding: '0.9rem 0.75rem', fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <Clock size={11} />
-                    {ds.updated}
-                  </div>
-                </td>
-                <td style={{ padding: '0.9rem 0.75rem' }}>
-                  <button style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: '6px',
-                    padding: '0.3rem 0.65rem',
-                    fontSize: '0.7rem',
-                    color: 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    transform: 'none',
-                  }}>
-                    <ArrowUpRight size={11} />
-                    Open
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+
+                  {/* Region */}
+                  <td style={{ padding: '0.9rem 0.75rem' }}>
+                    <span style={{
+                      background: `${regionColor}15`, border: `1px solid ${regionColor}30`,
+                      borderRadius: '20px', padding: '0.15rem 0.6rem',
+                      fontSize: '0.65rem', color: regionColor, fontWeight: 600,
+                    }}>
+                      {d.region}
+                    </span>
+                  </td>
+
+                  {/* Seismic Zone */}
+                  <td style={{ padding: '0.9rem 0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{
+                        background: `${ZONE_COLORS[d.seismic.zone]}20`, border: `1px solid ${ZONE_COLORS[d.seismic.zone]}40`,
+                        borderRadius: '6px', padding: '0.1rem 0.45rem',
+                        fontSize: '0.72rem', color: ZONE_COLORS[d.seismic.zone], fontWeight: 700,
+                      }}>
+                        Zone {d.seismic.zone}
+                      </span>
+                      <span style={{
+                        fontSize: '0.65rem', color: RISK_COLORS[d.seismic.structuralRisk], fontWeight: 600,
+                      }}>
+                        {d.seismic.structuralRisk}
+                      </span>
+                    </div>
+                  </td>
+
+                  {/* Climate */}
+                  <td style={{ padding: '0.9rem 0.75rem' }}>
+                    <span style={{
+                      background: `${CLIMATE_COLORS[d.thermal.climateZone]}15`,
+                      border: `1px solid ${CLIMATE_COLORS[d.thermal.climateZone]}30`,
+                      borderRadius: '20px', padding: '0.15rem 0.6rem',
+                      fontSize: '0.65rem', color: CLIMATE_COLORS[d.thermal.climateZone], fontWeight: 600,
+                    }}>
+                      {d.thermal.climateZone}
+                    </span>
+                  </td>
+
+                  {/* Wind Risk */}
+                  <td style={{ padding: '0.9rem 0.75rem' }}>
+                    <WindBar value={d.wind.structuralWindIndex} />
+                  </td>
+
+                  {/* Grid Reliability */}
+                  <td style={{ padding: '0.9rem 0.75rem' }}>
+                    <GridBar value={d.electrical.gridReliabilityPct} />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
