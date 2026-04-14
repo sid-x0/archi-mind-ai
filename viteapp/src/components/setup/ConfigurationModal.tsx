@@ -84,7 +84,7 @@ export function ConfigurationModal({ onComplete }: ConfigurationModalProps) {
             {selectedDistrict && (
               <div style={{
                 marginTop: '0.65rem', fontSize: '0.68rem', 
-                display: 'flex', gap: '0.5rem', flexWrap: 'wrap', lineWeight: 1.6,
+                display: 'flex', gap: '0.5rem', flexWrap: 'wrap', lineHeight: 1.6,
               }}>
                 {[
                   { text: selectedDistrict.region, color: '#7c3aed' },
