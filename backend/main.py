@@ -28,7 +28,7 @@ _origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,14 +39,9 @@ app.include_router(chat_router, prefix="/api", tags=["chat"])
 app.include_router(building_router, prefix="/api", tags=["building"])
 
 
-@app.get("/", tags=["health"])
-async def root():
-    gemini_ready = bool(os.getenv("GEMINI_API_KEY"))
-    return {
-        "status": "ok",
-        "service": "AI Architect Assistant",
-        "gemini": "configured" if gemini_ready else "missing — using keyword fallback",
-    }
+@app.get("/")
+def root():
+    return {"message": "Backend running"}
 
 
 @app.get("/health", tags=["health"])
